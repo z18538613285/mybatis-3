@@ -39,20 +39,23 @@ public class PluginTest {
     assertFalse("Always".equals(map.toString()));
   }
 
+  /**
+   *
+   */
   @Intercepts({
-      @Signature(type = Map.class, method = "get", args = {Object.class})})
+      @Signature(type = Map.class, method = "get", args = {Object.class})}) // <1>
   public static class AlwaysMapPlugin implements Interceptor {
-    @Override
+    @Override // <4>
     public Object intercept(Invocation invocation) throws Throwable {
       return "Always";
     }
 
-    @Override
+    @Override // <2>
     public Object plugin(Object target) {
       return Plugin.wrap(target, this);
     }
 
-    @Override
+    @Override // <3>
     public void setProperties(Properties properties) {
     }
   }

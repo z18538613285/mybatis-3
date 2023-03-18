@@ -28,16 +28,21 @@ import java.lang.annotation.Target;
  * </p>
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ *
+ * @tips 指向指定命名空间的注解。
+ * 对应 XML 标签为 <cache-ref />
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target(ElementType.TYPE) // 类型
 public @interface CacheNamespaceRef {
   /**
+   *
    * A namespace type to reference a cache (the namespace name become a FQCN of specified type)
    */
   Class<?> value() default void.class;
   /**
+   * 指向的命名空间
    * A namespace name to reference a cache
    * @since 3.4.2
    */

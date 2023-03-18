@@ -23,6 +23,9 @@ import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
 import org.apache.ibatis.session.Configuration;
 
+/**
+ * 语言驱动接口。
+ */
 public interface LanguageDriver {
 
   /**
@@ -34,6 +37,8 @@ public interface LanguageDriver {
    * @return
    * @author Frank D. Martinez [mnesarco]
    * @see DefaultParameterHandler
+   *
+   * @tips 创建 ParameterHandler 对象。
    */
   ParameterHandler createParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql);
 
@@ -45,6 +50,8 @@ public interface LanguageDriver {
    * @param script XNode parsed from a XML file
    * @param parameterType input parameter type got from a mapper method or specified in the parameterType xml attribute. Can be null.
    * @return
+   *
+   * @tips 创建 SqlSource 对象，从 Mapper XML 配置的 Statement 标签中，即 <select /> 等。
    */
   SqlSource createSqlSource(Configuration configuration, XNode script, Class<?> parameterType);
 
@@ -56,6 +63,8 @@ public interface LanguageDriver {
    * @param script The content of the annotation
    * @param parameterType input parameter type got from a mapper method or specified in the parameterType xml attribute. Can be null.
    * @return
+   *
+   * @tips 创建 SqlSource 对象，从方法注解配置，即 @Select 等。
    */
   SqlSource createSqlSource(Configuration configuration, String script, Class<?> parameterType);
 

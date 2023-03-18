@@ -20,6 +20,8 @@ import java.lang.reflect.Constructor;
 /**
  * @author Clinton Begin
  * @author Eduardo Macarron
+ *
+ * @tips Log 工厂类。
  */
 public final class LogFactory {
 
@@ -28,9 +30,17 @@ public final class LogFactory {
    */
   public static final String MARKER = "MYBATIS";
 
+  /**
+   * 使用的 Log 的构造方法
+   */
   private static Constructor<? extends Log> logConstructor;
 
+  /**
+   * 按照 Slf4j、CommonsLogging、Log4J2Logging、Log4JLogging、JdkLogging、NoLogging 的顺序，
+   * 逐个尝试，判断使用哪个 Log 的实现类，即初始化 logConstructor 属性。
+   */
   static {
+    // <1> 逐个尝试，判断使用哪个 Log 的实现类，即初始化 logConstructor 属性
     tryImplementation(LogFactory::useSlf4jLogging);
     tryImplementation(LogFactory::useCommonsLogging);
     tryImplementation(LogFactory::useLog4J2Logging);
@@ -47,6 +57,7 @@ public final class LogFactory {
     return getLog(aClass.getName());
   }
 
+  // 获得 Log 对象。
   public static Log getLog(String logger) {
     try {
       return logConstructor.newInstance(logger);
@@ -55,6 +66,7 @@ public final class LogFactory {
     }
   }
 
+  // 设置自定义的 Log 实现类。
   public static synchronized void useCustomLogging(Class<? extends Log> clazz) {
     setImplementation(clazz);
   }
@@ -99,11 +111,14 @@ public final class LogFactory {
 
   private static void setImplementation(Class<? extends Log> implClass) {
     try {
+      // 获得参数为 String 的构造方法
       Constructor<? extends Log> candidate = implClass.getConstructor(String.class);
+      // 创建 Log 对象
       Log log = candidate.newInstance(LogFactory.class.getName());
       if (log.isDebugEnabled()) {
         log.debug("Logging initialized using '" + implClass + "' adapter.");
       }
+      // 创建成功，意味着可以使用，设置为 logConstructor
       logConstructor = candidate;
     } catch (Throwable t) {
       throw new LogException("Error setting Log implementation.  Cause: " + t, t);

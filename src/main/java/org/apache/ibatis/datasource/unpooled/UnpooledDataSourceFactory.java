@@ -26,28 +26,53 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 /**
  * @author Clinton Begin
+ * 实现 DataSourceFactory 接口，非池化的 DataSourceFactory 实现类。
+ *
+ * UNPOOLED– 这个数据源的实现只是每次被请求时打开和关闭连接。虽然有点慢，
+ * 但对于在数据库连接可用性方面没有太高要求的简单应用程序来说，是一个很好的选择。
+ * 不同的数据库在性能方面的表现也是不一样的，对于某些数据库来说，使用连接池并不重要，
+ * 这个配置就很适合这种情形。UNPOOLED 类型的数据源仅仅需要配置以下 5 种属性：
+ *
+ * driver – 这是 JDBC 驱动的 Java 类的完全限定名（并不是 JDBC 驱动中可能包含的数据源类）。
+ * url – 这是数据库的 JDBC URL 地址。
+ * username – 登录数据库的用户名。
+ * password – 登录数据库的密码。
+ * defaultTransactionIsolationLevel – 默认的连接事务隔离级别。
+ * 作为可选项，你也可以传递属性给数据库驱动。要这样做，属性的前缀为“driver.”，例如：
+ *
+ * driver.encoding=UTF8
+ * 这将通过 DriverManager.getConnection(url,driverProperties) 方法传递值为 UTF8 的 encoding 属性给数据库驱动。
  */
 public class UnpooledDataSourceFactory implements DataSourceFactory {
 
   private static final String DRIVER_PROPERTY_PREFIX = "driver.";
   private static final int DRIVER_PROPERTY_PREFIX_LENGTH = DRIVER_PROPERTY_PREFIX.length();
-
+  /**
+   * DataSource 对象
+   */
   protected DataSource dataSource;
 
   public UnpooledDataSourceFactory() {
+    // 创建 UnpooledDataSource 对象
     this.dataSource = new UnpooledDataSource();
   }
 
+  // 将 properties 的属性，初始化到 dataSource 中。
   @Override
   public void setProperties(Properties properties) {
     Properties driverProperties = new Properties();
+    // 创建 dataSource 对应的 MetaObject 对象
     MetaObject metaDataSource = SystemMetaObject.forObject(dataSource);
+    // 遍历 properties 属性，初始化到 driverProperties 和 MetaObject 中
     for (Object key : properties.keySet()) {
       String propertyName = (String) key;
+      // 以 "driver." 开头的配置
       if (propertyName.startsWith(DRIVER_PROPERTY_PREFIX)) {
+        // 初始化到 driverProperties 中
         String value = properties.getProperty(propertyName);
         driverProperties.setProperty(propertyName.substring(DRIVER_PROPERTY_PREFIX_LENGTH), value);
       } else if (metaDataSource.hasSetter(propertyName)) {
+        // 初始化到 MetaObject 中
         String value = (String) properties.get(propertyName);
         Object convertedValue = convertValue(metaDataSource, propertyName, value);
         metaDataSource.setValue(propertyName, convertedValue);
@@ -55,6 +80,7 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
         throw new DataSourceException("Unknown DataSource property: " + propertyName);
       }
     }
+    // 设置 driverProperties 到 MetaObject 中
     if (driverProperties.size() > 0) {
       metaDataSource.setValue("driverProperties", driverProperties);
     }
@@ -65,6 +91,7 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
     return dataSource;
   }
 
+  // 将字符串转化成对应属性的类型
   private Object convertValue(MetaObject metaDataSource, String propertyName, String value) {
     Object convertedValue = value;
     Class<?> targetType = metaDataSource.getSetterType(propertyName);

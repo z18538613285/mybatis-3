@@ -23,6 +23,8 @@ import java.lang.annotation.Target;
 
 /**
  * @author Clinton Begin
+ * 结果的注解。
+ * 对应 XML 标签为 <resultMap />
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

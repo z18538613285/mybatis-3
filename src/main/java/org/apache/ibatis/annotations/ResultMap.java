@@ -23,10 +23,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author Jeff Butler
+ * 使用的结果集的注解。
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD) // 方法
 public @interface ResultMap {
+  /**
+   * @return 结果集
+   */
   String[] value();
 }

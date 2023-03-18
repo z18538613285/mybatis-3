@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 
 /**
  * @author Eduardo Macarron
+ * 注解方法的处理器。
  */
 public class MethodResolver {
   private final MapperAnnotationBuilder annotationBuilder;
@@ -30,6 +31,7 @@ public class MethodResolver {
   }
 
   public void resolve() {
+    // 执行注解方法的解析
     annotationBuilder.parseStatement(method);
   }
 

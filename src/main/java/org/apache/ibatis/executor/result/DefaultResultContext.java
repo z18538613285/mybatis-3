@@ -19,17 +19,27 @@ import org.apache.ibatis.session.ResultContext;
 
 /**
  * @author Clinton Begin
+ * 默认的 ResultContext 的实现类。
  */
 public class DefaultResultContext<T> implements ResultContext<T> {
 
+  /**
+   * 当前结果对象
+   */
   private T resultObject;
+  /**
+   * 总的结果对象的数量
+   */
   private int resultCount;
+  /**
+   * 是否暂停
+   */
   private boolean stopped;
 
   public DefaultResultContext() {
     resultObject = null;
     resultCount = 0;
-    stopped = false;
+    stopped = false; // 默认非暂停
   }
 
   @Override
@@ -47,8 +57,14 @@ public class DefaultResultContext<T> implements ResultContext<T> {
     return stopped;
   }
 
+  /**
+   *  当前结果对象
+   * @param resultObject 当前结果对象
+   */
   public void nextResultObject(T resultObject) {
+    // 数量 + 1
     resultCount++;
+    // 当前结果对象
     this.resultObject = resultObject;
   }
 

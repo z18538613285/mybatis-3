@@ -23,10 +23,19 @@ import java.lang.annotation.Target;
 
 /**
  * @author Clinton Begin
+ * Map 结果的键的注解。
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD) // 方法上
 public @interface MapKey {
+  /**
+   * @return 键名
+   * 根据多个id批量获取名称
+   *
+   * list 包含有Map key="id"的list
+   *  @MapKey("id")
+   *  public Map<Integer, Map<String, Object>> getNamesByIds(List<Map<String, Object>> list);
+   */
   String value();
 }

@@ -36,17 +36,28 @@ import org.apache.ibatis.logging.LogFactory;
  * a properties was specified and no translation was found
  *
  * @author Eduardo Macarron
+ *
+ * @tips 供应商数据库标识提供器实现类。
  */
 public class VendorDatabaseIdProvider implements DatabaseIdProvider {
-
+  /**
+   * Properties 对象
+   */
   private Properties properties;
 
+  /**
+   * 获得数据库标识
+   *
+   * @param dataSource 数据源
+   * @return
+   */
   @Override
   public String getDatabaseId(DataSource dataSource) {
     if (dataSource == null) {
       throw new NullPointerException("dataSource cannot be null");
     }
     try {
+      // 获得数据库标识
       return getDatabaseName(dataSource);
     } catch (Exception e) {
       LogHolder.log.error("Could not get a databaseId from dataSource", e);
@@ -60,9 +71,11 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
   }
 
   private String getDatabaseName(DataSource dataSource) throws SQLException {
+    // <1> 获得数据库产品名
     String productName = getDatabaseProductName(dataSource);
     if (this.properties != null) {
       for (Map.Entry<Object, Object> property : properties.entrySet()) {
+        // 如果产品名包含 KEY ，则返回对应的  VALUE
         if (productName.contains((String) property.getKey())) {
           return (String) property.getValue();
         }
@@ -70,14 +83,18 @@ public class VendorDatabaseIdProvider implements DatabaseIdProvider {
       // no match, return null
       return null;
     }
+    // <3> 不存在 properties ，则直接返回 productName
     return productName;
   }
 
+  // 获得数据库产品名。
   private String getDatabaseProductName(DataSource dataSource) throws SQLException {
     Connection con = null;
     try {
       con = dataSource.getConnection();
+      // 获得数据库连接
       DatabaseMetaData metaData = con.getMetaData();
+      // 获得数据库产品名
       return metaData.getDatabaseProductName();
     } finally {
       if (con != null) {

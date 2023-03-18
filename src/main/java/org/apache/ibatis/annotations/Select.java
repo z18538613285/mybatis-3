@@ -23,10 +23,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author Clinton Begin
+ * 查询语句注解。
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD) // 方法
 public @interface Select {
+  /**
+   * @return 查询语句
+   */
   String[] value();
 }

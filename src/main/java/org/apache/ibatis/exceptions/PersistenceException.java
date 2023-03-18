@@ -17,6 +17,21 @@ package org.apache.ibatis.exceptions;
 
 /**
  * @author Clinton Begin
+ * 目前 MyBatis 真正的异常基类。
+ * 会和 parsing 包一样，都会定义其独有的异常类。但是，代码都是相同的。
+ *
+ * reflection 包：ReflectionException
+ * logging 包：LogException
+ * builder 包：BuilderException、IncompleteElementException
+ * scripting 包：ScriptingException
+ * binding 包：BindingException
+ * type 包：TypeException
+ * session 包：SqlSessionException
+ * cache 包：CacheException
+ * transaction 包：TransactionException
+ * datasource 包：DataSourceException
+ * executor 包：ResultMapException、ExecutorException、BatchExecutorException
+ * plugin 包：PluginException
  */
 @SuppressWarnings("deprecation")
 public class PersistenceException extends IbatisException {

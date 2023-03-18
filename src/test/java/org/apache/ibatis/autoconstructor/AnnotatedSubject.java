@@ -32,6 +32,11 @@ public class AnnotatedSubject {
     this.weight = weight;
   }
 
+  /**
+   * 对应 subject 表。
+   * @AutomapConstructor 注解，表示 MyBatis 查询后，在创建 AnnotatedSubject 对象，使用该构造方法。
+   * 😈 实际场景下，非常少使用这个注解，甚至 Google 上资料也不多。
+   */
   @AutomapConstructor
   public AnnotatedSubject(final int id, final String name, final int age, final Integer height, final Integer weight) {
     this.id = id;

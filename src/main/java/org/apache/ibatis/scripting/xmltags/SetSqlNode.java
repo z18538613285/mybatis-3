@@ -22,6 +22,7 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ * <set /> 标签的 SqlNode 实现类。
  */
 public class SetSqlNode extends TrimSqlNode {
 

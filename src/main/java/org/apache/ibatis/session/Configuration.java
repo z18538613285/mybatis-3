@@ -115,7 +115,13 @@ public class Configuration {
 
   protected String logPrefix;
   protected Class <? extends Log> logImpl;
+  /**
+   * VFS 实现类
+   */
   protected Class <? extends VFS> vfsImpl;
+  /**
+   * 本地缓存范围
+   */
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
   protected Set<String> lazyLoadTriggerMethods = new HashSet<>(Arrays.asList("equals", "clone", "hashCode", "toString"));
@@ -148,17 +154,32 @@ public class Configuration {
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
+  /**
+   * MappedStatement 映射
+   *
+   * KEY：`${namespace}.${id}`
+   */
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
       .conflictMessageProducer((savedValue, targetValue) ->
           ". please check " + savedValue.getResource() + " and " + targetValue.getResource());
+  /**
+   * Cache 对象集合
+   *
+   * KEY：命名空间 namespace
+   */
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
-
+  /**
+   * 已加载资源( Resource )集合
+   */
   protected final Set<String> loadedResources = new HashSet<>();
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
+  /**
+   * XMLStatementBuilder 集合
+   */
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
   protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<>();
   protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<>();
@@ -168,6 +189,8 @@ public class Configuration {
    * A map holds cache-ref relationship. The key is the namespace that
    * references a cache bound to another namespace and the value is the
    * namespace which the actual cache is bound to.
+   *
+   * @tips Cache 指向的映射
    */
   protected final Map<String, String> cacheRefMap = new HashMap<>();
 
@@ -206,6 +229,7 @@ public class Configuration {
     typeAliasRegistry.registerAlias("CGLIB", CglibProxyFactory.class);
     typeAliasRegistry.registerAlias("JAVASSIST", JavassistProxyFactory.class);
 
+    // 注册到 languageRegistry 中
     languageRegistry.setDefaultDriverClass(XMLLanguageDriver.class);
     languageRegistry.register(RawLanguageDriver.class);
   }
@@ -235,7 +259,9 @@ public class Configuration {
 
   public void setVfsImpl(Class<? extends VFS> vfsImpl) {
     if (vfsImpl != null) {
+      // 设置 vfsImpl 属性
       this.vfsImpl = vfsImpl;
+      // 添加到 VFS 中的自定义 VFS 类的集合
       VFS.addImplClass(this.vfsImpl);
     }
   }
@@ -308,6 +334,7 @@ public class Configuration {
     loadedResources.add(resource);
   }
 
+  //判断当前 Mapper 是否已经加载过。
   public boolean isResourceLoaded(String resource) {
     return loadedResources.contains(resource);
   }
@@ -547,7 +574,9 @@ public class Configuration {
   }
 
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
+    // 创建 ParameterHandler 对象
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
+    // 应用插件
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
     return parameterHandler;
   }
@@ -559,8 +588,11 @@ public class Configuration {
     return resultSetHandler;
   }
 
+  // StatementHandler 对象 在 Configuration 类中创建，
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
+    // <1> 创建 RoutingStatementHandler 对象
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
+    // 应用插件
     statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
     return statementHandler;
   }
@@ -569,9 +601,17 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /**
+   * 创建 Executor 对象
+   * @param transaction 事务对象
+   * @param executorType 执行器类型
+   * @return
+   */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
-    executorType = executorType == null ? defaultExecutorType : executorType;
-    executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
+    // <1> 获得执行器类型
+    executorType = executorType == null ? defaultExecutorType : executorType; // 使用默认
+    executorType = executorType == null ? ExecutorType.SIMPLE : executorType; // 使用 ExecutorType.SIMPLE
+    // <2> 创建对应实现的 Executor 对象
     Executor executor;
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
@@ -580,9 +620,11 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
+    // <3> 如果开启缓存，创建 CachingExecutor 对象，进行包装
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    // <4> 应用插件
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }
@@ -628,8 +670,11 @@ public class Configuration {
   }
 
   public void addResultMap(ResultMap rm) {
+    // <1> 添加到 resultMaps 中
     resultMaps.put(rm.getId(), rm);
+    // 遍历全局的 ResultMap 集合，若其拥有 Discriminator 对象，则判断是否强制标记为有内嵌的 ResultMap
     checkLocallyForDiscriminatedNestedResultMaps(rm);
+    // 若传入的 ResultMap 不存在内嵌 ResultMap 并且有 Discriminator ，则判断是否需要强制表位有内嵌的 ResultMap
     checkGloballyForDiscriminatedNestedResultMaps(rm);
   }
 
@@ -720,9 +765,11 @@ public class Configuration {
   }
 
   public MappedStatement getMappedStatement(String id, boolean validateIncompleteStatements) {
+    // 校验，保证所有 MappedStatement 已经构造完毕
     if (validateIncompleteStatements) {
       buildAllStatements();
     }
+    // 获取 MappedStatement 对象
     return mappedStatements.get(id);
   }
 
@@ -777,12 +824,12 @@ public class Configuration {
   protected void buildAllStatements() {
     parsePendingResultMaps();
     if (!incompleteCacheRefs.isEmpty()) {
-      synchronized (incompleteCacheRefs) {
+      synchronized (incompleteCacheRefs) { // 保证 incompleteResultMaps 被解析完
         incompleteCacheRefs.removeIf(x -> x.resolveCacheRef() != null);
       }
     }
     if (!incompleteStatements.isEmpty()) {
-      synchronized (incompleteStatements) {
+      synchronized (incompleteStatements) { // 保证 incompleteCacheRefs 被解析完
         incompleteStatements.removeIf(x -> {
           x.parseStatementNode();
           return true;
@@ -790,7 +837,7 @@ public class Configuration {
       }
     }
     if (!incompleteMethods.isEmpty()) {
-      synchronized (incompleteMethods) {
+      synchronized (incompleteMethods) { // 保证 incompleteStatements 被解析完
         incompleteMethods.removeIf(x -> {
           x.resolve();
           return true;
@@ -803,7 +850,7 @@ public class Configuration {
     if (incompleteResultMaps.isEmpty()) {
       return;
     }
-    synchronized (incompleteResultMaps) {
+    synchronized (incompleteResultMaps) { // 保证 incompleteStatements 被解析完
       boolean resolved;
       IncompleteElementException ex = null;
       do {
@@ -839,12 +886,17 @@ public class Configuration {
 
   // Slow but a one time cost. A better solution is welcome.
   protected void checkGloballyForDiscriminatedNestedResultMaps(ResultMap rm) {
+    // 如果传入的 ResultMap 有内嵌的 ResultMap
     if (rm.hasNestedResultMaps()) {
+      // 遍历全局的 ResultMap 集合
       for (Map.Entry<String, ResultMap> entry : resultMaps.entrySet()) {
         Object value = entry.getValue();
         if (value instanceof ResultMap) {
           ResultMap entryResultMap = (ResultMap) value;
+          // 判断遍历的全局的 entryResultMap 不存在内嵌 ResultMap 并且有 Discriminator
           if (!entryResultMap.hasNestedResultMaps() && entryResultMap.getDiscriminator() != null) {
+            // 判断是否 Discriminator 的 ResultMap 集合中，使用了传入的 ResultMap 。
+            // 如果是，则标记为有内嵌的 ResultMap
             Collection<String> discriminatedResultMapNames = entryResultMap.getDiscriminator().getDiscriminatorMap().values();
             if (discriminatedResultMapNames.contains(rm.getId())) {
               entryResultMap.forceNestedResultMaps();
@@ -857,10 +909,13 @@ public class Configuration {
 
   // Slow but a one time cost. A better solution is welcome.
   protected void checkLocallyForDiscriminatedNestedResultMaps(ResultMap rm) {
+    // 如果传入的 ResultMap 不存在内嵌 ResultMap 并且有 Discriminator
     if (!rm.hasNestedResultMaps() && rm.getDiscriminator() != null) {
+      // 遍历传入的 ResultMap 的 Discriminator 的 ResultMap 集合
       for (Map.Entry<String, String> entry : rm.getDiscriminator().getDiscriminatorMap().entrySet()) {
         String discriminatedResultMapName = entry.getValue();
         if (hasResultMap(discriminatedResultMapName)) {
+          // 如果引用的 ResultMap 存在内嵌 ResultMap ，则标记传入的 ResultMap 存在内嵌 ResultMap
           ResultMap discriminatedResultMap = resultMaps.get(discriminatedResultMapName);
           if (discriminatedResultMap.hasNestedResultMaps()) {
             rm.forceNestedResultMaps();

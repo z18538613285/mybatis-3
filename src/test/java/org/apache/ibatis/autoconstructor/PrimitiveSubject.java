@@ -26,6 +26,11 @@ public class PrimitiveSubject {
   private final boolean active;
   private final Date dt;
 
+  /**
+   * 对应的也是 subject 表。
+   * 和 AnnotatedSubject 不同，在其构造方法上，weight 和 height 方法参数的类型是 int ，
+   * 而不是 Integer 。那么，如果 subject 表中的记录，这两个字段为 NULL 时，会创建 PrimitiveSubject 对象报错。
+   */
   public PrimitiveSubject(final int id, final String name, final int age, final int height, final int weight, final boolean active, final Date dt) {
     this.id = id;
     this.name = name;

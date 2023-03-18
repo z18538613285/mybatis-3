@@ -25,10 +25,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author Clinton Begin
+ * @tips 语言驱动的注解
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD) // 方法
 public @interface Lang {
+  /**
+   * @return 驱动类
+   */
   Class<? extends LanguageDriver> value();
 }

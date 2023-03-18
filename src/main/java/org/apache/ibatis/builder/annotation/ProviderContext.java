@@ -22,10 +22,18 @@ import java.lang.reflect.Method;
  *
  * @author Kazuki Shimizu
  * @since 3.4.5
+ *
+ * ProviderSqlSource 的上下文。
  */
 public final class ProviderContext {
 
+  /**
+   * Mapper 接口
+   */
   private final Class<?> mapperType;
+  /**
+   * Mapper 的方法
+   */
   private final Method mapperMethod;
 
   /**

@@ -42,6 +42,7 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ * 基于 Cglib 的 ProxyFactory 实现类。
  */
 public class CglibProxyFactory implements ProxyFactory {
 

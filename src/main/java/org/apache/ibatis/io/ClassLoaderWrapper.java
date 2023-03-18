@@ -22,10 +22,20 @@ import java.net.URL;
  * A class to wrap access to multiple class loaders making them work as one
  *
  * @author Clinton Begin
+ *
+ * @tips ClassLoader 包装器。可使用多个 ClassLoader 加载对应的资源，直到有一成功后返回资源。
  */
 public class ClassLoaderWrapper {
-
+  /**
+   * 默认 ClassLoader 对象
+   * 默认 ClassLoader 对象。目前不存在初始化该属性的构造方法。
+   * 可通过 ClassLoaderWrapper.defaultClassLoader = xxx 的方式，进行设置。
+   */
   ClassLoader defaultClassLoader;
+  /**
+   * 系统 ClassLoader 对象
+   * 系统 ClassLoader 对象。在构造方法中，已经初始化。
+   */
   ClassLoader systemClassLoader;
 
   ClassLoaderWrapper() {
@@ -41,6 +51,8 @@ public class ClassLoaderWrapper {
    *
    * @param resource - the resource to locate
    * @return the resource or null
+   *
+   * @tips 获得指定资源的 URL
    */
   public URL getResourceAsURL(String resource) {
     return getResourceAsURL(resource, getClassLoaders(null));
@@ -62,6 +74,8 @@ public class ClassLoaderWrapper {
    *
    * @param resource - the resource to find
    * @return the stream or null
+   *
+   * @tips 获得指定资源的 InputStream 对象。
    */
   public InputStream getResourceAsStream(String resource) {
     return getResourceAsStream(resource, getClassLoaders(null));
@@ -84,6 +98,8 @@ public class ClassLoaderWrapper {
    * @param name - the class to look for
    * @return - the class
    * @throws ClassNotFoundException Duh.
+   *
+   * @tips 获得指定类名对应的类。
    */
   public Class<?> classForName(String name) throws ClassNotFoundException {
     return classForName(name, getClassLoaders(null));
@@ -109,17 +125,21 @@ public class ClassLoaderWrapper {
    * @return the resource or null
    */
   InputStream getResourceAsStream(String resource, ClassLoader[] classLoader) {
+    // 遍历 ClassLoader 数组
     for (ClassLoader cl : classLoader) {
       if (null != cl) {
 
+        // 获得 InputStream ，不带 /
         // try to find the resource as passed
         InputStream returnValue = cl.getResourceAsStream(resource);
 
         // now, some class loaders want this leading "/", so we'll add it and try again if we didn't find the resource
+        // 获得 InputStream ，带 /
         if (null == returnValue) {
           returnValue = cl.getResourceAsStream("/" + resource);
         }
 
+        // 成功获得到，返回
         if (null != returnValue) {
           return returnValue;
         }
@@ -134,26 +154,31 @@ public class ClassLoaderWrapper {
    * @param resource    - the resource to locate
    * @param classLoader - the class loaders to examine
    * @return the resource or null
+   *
+   * @tips 获得指定资源的 InputStream 。
    */
   URL getResourceAsURL(String resource, ClassLoader[] classLoader) {
 
     URL url;
-
+    // 遍历 ClassLoader 数组
     for (ClassLoader cl : classLoader) {
 
       if (null != cl) {
 
         // look for the resource as passed in...
+        // 获得 URL ，不带 /
         url = cl.getResource(resource);
 
         // ...but some class loaders want this leading "/", so we'll add it
         // and try again if we didn't find the resource
+        // 获得 URL ，带 /
         if (null == url) {
           url = cl.getResource("/" + resource);
         }
 
         // "It's always in the last place I look for it!"
         // ... because only an idiot would keep looking for it after finding it, so stop looking already.
+        // 成功获得到，返回
         if (null != url) {
           return url;
         }
@@ -177,14 +202,17 @@ public class ClassLoaderWrapper {
    */
   Class<?> classForName(String name, ClassLoader[] classLoader) throws ClassNotFoundException {
 
+    // 遍历 ClassLoader 数组
     for (ClassLoader cl : classLoader) {
 
       if (null != cl) {
 
         try {
 
+          // 获得类
           Class<?> c = Class.forName(name, true, cl);
 
+          // 成功获得到，返回
           if (null != c) {
             return c;
           }
@@ -197,10 +225,12 @@ public class ClassLoaderWrapper {
 
     }
 
+    // 获得不到，抛出 ClassNotFoundException 异常
     throw new ClassNotFoundException("Cannot find class: " + name);
 
   }
 
+  // 得 ClassLoader 数组。
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[]{
         classLoader,

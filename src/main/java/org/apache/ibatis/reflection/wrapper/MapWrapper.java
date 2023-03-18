@@ -26,9 +26,10 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
  * @author Clinton Begin
+ * Map 对象的 ObjectWrapper 实现类。
  */
 public class MapWrapper extends BaseWrapper {
-
+  // object 变成了 map
   private final Map<String, Object> map;
 
   public MapWrapper(MetaObject metaObject, Map<String, Object> map) {

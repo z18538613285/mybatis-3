@@ -36,6 +36,7 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 /**
  * @author Clinton Begin
+ * Cache 构造器。基于装饰者设计模式，进行 Cache 对象的构造。
  */
 public class CacheBuilder {
   private final String id;

@@ -26,16 +26,19 @@ import java.lang.annotation.Target;
  * @since 3.4.2
  * @author Kazuki Shimizu
  * @see CacheNamespace
+ * 属性的注解。
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 public @interface Property {
   /**
+   * 属性名
    * A target property name
    */
   String name();
   /**
+   * 属性值
    * A property value or placeholder
    */
   String value();

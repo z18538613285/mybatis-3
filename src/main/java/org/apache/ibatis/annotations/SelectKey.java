@@ -25,20 +25,45 @@ import org.apache.ibatis.mapping.StatementType;
 
 /**
  * @author Clinton Begin
+ * 通过 SQL 语句获得主键的注解。
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface SelectKey {
+  /**
+   * @return 语句
+   */
   String[] statement();
 
+  /**
+   * @return Java 对象的属性
+   */
   String keyProperty();
-
+  /**
+   * @return 数据库的字段
+   */
   String keyColumn() default "";
 
+  /**
+   * @return 在插入语句执行前，还是执行后
+   *
+   * 注解方式和XML方式配置的属性基本相同，其中before为false时功能等同于order="AFTER"，before=true时功能等同于order="BEFORE"。
+   *
+   * 注意：在不同的数据库中，order的配置不同
+   *
+   * order属性的设置和使用的数据库有关。在MySQL数据库中，order属性设置的值是AFTER，因为当前记录的主键是在insert语句执行成功后才获取到的。
+   * 而在Oracel数据库中，order属性的值要设置为BEFORE，这是因为Oracle数据库中需要先从序列获取值，然后将值作为主键插入到数据库中。
+   *
+   */
   boolean before();
-
+  /**
+   * @return 返回类型
+   */
   Class<?> resultType();
 
+  /**
+   * @return {@link #statement()} 的类型
+   */
   StatementType statementType() default StatementType.PREPARED;
 }

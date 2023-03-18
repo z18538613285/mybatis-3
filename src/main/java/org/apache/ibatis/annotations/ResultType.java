@@ -29,6 +29,8 @@ import java.lang.annotation.Target;
  *
  * @since 3.2.0
  * @author Jeff Butler
+ *
+ * @tips 结果类型
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
